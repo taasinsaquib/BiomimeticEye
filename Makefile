@@ -1,8 +1,7 @@
 CC=g++
-# CFLAGS=-I.
+CFLAGS=-Wno-deprecated-declarations -framework OpenGL -lglut
 
-default: main.cpp
-	$(CC) -o prog main.cpp
-
+default:
+	$(CC) $(CFLAGS) -o prog main.cpp
 clean:
 	rm prog
