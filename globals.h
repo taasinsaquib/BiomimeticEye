@@ -362,7 +362,6 @@ keras::DataChunk* sampleLensKeras;
 //#define ONLINE_MOTOR
 //#define LENS_VIDEO
 
-//#define ONLINE_SNN
 #define ONLINE_EXE
 //#define DELTA_ONV
 //string snnPrefix = "C:\\Users\\taasi\\Desktop\\RunSNN\\files";

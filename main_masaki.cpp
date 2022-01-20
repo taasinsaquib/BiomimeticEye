@@ -479,7 +479,7 @@ void computeThetaPhi()
 		//raytracer(sherePos_local, SPHERE_SIZE, Vec3f_local(eye.x(),eye.y(), eye.z()), Vec3f_local(ori_leye.x()*gDTR,0,ori_leye.z()*gDTR),returnedImage,0);
 		raytracer(spehere_poss, SPHERE_SIZE, Vec3f_local(eye.x(),eye.y(), eye.z()), Vec3f_local(ori_leye.x()*gDTR,0,ori_leye.z()*gDTR),returnedImagePupil,returnedImageLens,returnedImageFoveation,0);
 
-#if defined(ONLINE_FOVEATION) || defined(ONLINE_SNN)
+#if defined(ONLINE_FOVEATION)
 		vector<float> ray_vec;
 #endif
 #ifdef ONLINE_PUPIL
@@ -530,7 +530,7 @@ void computeThetaPhi()
 				active_idx_color_lens.push_back(vl);
 				active_idx_color_foveation.push_back(vf);
 
-#if defined(ONLINE_FOVEATION) || defined(ONLINE_SNN)
+#if defined(ONLINE_FOVEATION)
 				ray_vec.push_back(vf.x);
 #endif
 #ifdef ONLINE_PUPIL
@@ -553,46 +553,6 @@ void computeThetaPhi()
 			vector<float> returned = mRayKeras->compute_output(sampleRayKeras);
 			ray_vec.clear();
 			
-#endif
-
-			// TODO: call executable here
-#ifdef ONLINE_SNN
-			cout << " HI " << endl;
-			// write ONV to file
-			for (int i = 0; i < (RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1; i++) {
-				fonvOut << returnedImageFoveation[i].x << ",";
-			}
-			fonvOut << returnedImageFoveation[(RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1].x << endl;
-
-			system("C:\\Users\\taasi\\Desktop\\RunSNN\\dist\\main\\main.exe --f");
-			
-			vector<float> returned(2);
-
-			int p1 = 0;
-			//cout << "reading foveation result" << endl;
-			ifstream ifsResult(snnPrefix + "\\resultOut.csv", ios::app);
-			if (!ifsResult) {
-				cout << "Could not load foveation result file";
-			}
-			string str2;
-			while (getline(ifsResult, str2)) {
-				string token;
-				istringstream stream(str2);
-				while (getline(stream, token, ',')) {
-					float temp = stof(token);
-					if (p1 == 0)
-						returned[0] = temp;
-					else
-						returned[1] = temp;
-					// cout << temp << " ";
-					p1++;
-				}
-			}
-			ifsResult.close();
-
-			// clear file
-			ofstream result(snnPrefix + "\\resultOut.csv");
-			result.close();
 #endif
 
 #ifdef ONLINE_PUPIL
@@ -619,7 +579,7 @@ void computeThetaPhi()
 			ray_lens.clear();
 #endif
 
-#if defined(ONLINE_FOVEATION) || defined(ONLINE_SNN)
+#if defined(ONLINE_FOVEATION)
 			tyl = returned[0]*stdValueLeft[0] + meanValueLeft[0] + eye_cyl;
 			txl = returned[1]*stdValueLeft[1] + meanValueLeft[1] + eye_cxl;
 			tyl_temp = tyl;
@@ -3593,7 +3553,7 @@ void doInverseDynamicMuscleControlLeyeNew(gVec3 v)
 	myComputeThetaPhi2();
 #endif
 
-#if defined(ONLINE_FOVEATION) || defined(ONLINE_SNN) || defined(ONLINE_EXE)
+#if defined(ONLINE_FOVEATION) || defined(ONLINE_EXE)
 	double theta_final = eye_cyl;
 	double phi_final = eye_cxl;
 #else
@@ -4524,16 +4484,6 @@ int main( int argc, char **argv )
 	fonvOut.close();
 #endif
 
-#ifdef ONLINE_SNN
-	// both files should be cleared when they are opened
-	// write all zeros to ONV file to start
-	for (int i = 0; i < 14399; i++) {
-		fonvOut << "0, ";
-	}
-	fonvOut << "0" << endl;
-
-	readStdMeanLeft();
-#endif
 #ifdef ONLINE_FOVEATION
 #ifdef OLD_RETINA
 	mRayKeras = new keras::KerasModel("dumped_raytrace_left.nnet", true);
