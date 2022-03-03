@@ -265,6 +265,7 @@ void move_visual_target_lens_training(osg::MatrixTransform* trans_visual_target,
 void move_visual_target_lens_training_new(osg::MatrixTransform* trans_visual_target, double time);
 void move_visual_target_lens_online_fixed_positions(osg::MatrixTransform* trans_visual_target, double time);
 bool move_visual_target_fixed_position(osg::MatrixTransform* trans_visual_target, double time);
+void move_visual_target_projectile_motion(osg::MatrixTransform* trans_visual_target, double time);
 
 gVec3 getcurrent_ori();
 gVec3 getcurrent_ori_leye();
@@ -1501,16 +1502,13 @@ void display(void)
 				//move_visual_target_saccade_fixed(visualTarget.get(), curTime);
 				move_visual_target_smooth_pursuit(visualTarget.get(), curTime);
 				//move_visual_target_smooth_pursuit_lateral(visualTarget.get(), curTime);
-				//move_visual_target_oscillate_straight(visualTarget.get(), curTime);
-				//move_visual_target_ball_thrown(visualTarget.get(), curTime);
-				//move_visual_target_ball_straight(visualTarget.get(), curTime);
 				//move_visual_target_fixed_position(visualTarget.get(), curTime);
+				//move_visual_target_projectile_motion(visualTarget.get(), curTime);
 
 				// Pupil demonstration
-				 //move_visual_target_ball_thrown(visualTarget.get(), curTime);
-				 /*move_visual_target_smooth_pursuit(visualTarget.get(), curTime); */
+				//move_visual_target_ball_thrown(visualTarget.get(), curTime);
+				//move_visual_target_smooth_pursuit(visualTarget.get(), curTime);
 				
-
 				// Pupil Training
 				//move_visual_target_pupil_training(visualTarget.get(), curTime);
 
@@ -1518,7 +1516,7 @@ void display(void)
 				//move_visual_target_lens_training(visualTarget.get(), curTime);
 
 				// Foveation Training
-				 //move_visual_target_foveation_training(visualTarget.get(), curTime);
+				//move_visual_target_foveation_training(visualTarget.get(), curTime);
 
 #ifdef LENS_VIDEO
 				static int close_times = 0;
@@ -3239,7 +3237,7 @@ void generateTrainingDatasetMotor()
 		if(leye_IK_solved && leye_muscle_solved) {
 			cnt++;
 		}
-		if(cnt%10==0) {
+		if(cnt%1000==0) {
 			cout << "iteration = " << cnt << endl;
 		}
 
@@ -3520,35 +3518,6 @@ void doInverseDynamicMuscleControlLeye(gVec3 v)
 
 void doInverseDynamicMuscleControlLeyeNew(gVec3 v)
 {
-
-	/*
-	* TODO: call executable here, read results, process output like in other functions
-	* Problem: need to write new ONV to file, find out how to do that
-
-	double theta_final = 0;
-	double phi_final = 0;
-
-	int p1 = 0;
-	//cout << "reading foveation result" << endl;
-	ifstream ifsResult(snnPrefix + "\\resultOut.csv");
-	if (!ifsResult) {
-		cout << "Could not load foveation result file";
-	}
-	string str2;
-	while (getline(ifsResult, str2)) {
-		string token;
-		istringstream stream(str2);
-		while (getline(stream, token, ',')) {
-			float temp = stof(token);
-			if (p1 == 0)
-				theta_final = temp;
-			else
-				phi_final = temp;
-			// cout << temp << " ";
-			p1++;
-		}
-	}
-	*/
 #ifdef ONLINE_EXE
 	myComputeThetaPhi2();
 #endif
@@ -3704,6 +3673,50 @@ void doInverseDynamicMuscleControlLeyeNew(gVec3 v)
 	}
 	
 	//cout << "frame " << frame << endl;
+
+	// Everything below this just records data for plotting
+	///*
+
+	int num_eoc_muscles = 6;
+
+	ofstream foutput("kerasOutputLeyeActivationsForPlotting.csv", ios::app);
+	ofstream foutputori("angleRecordings/outputOriLeye.csv", ios::app);
+	ofstream foutputvel("angleRecordings/outputVelLeye.csv", ios::app);
+	ofstream foutputacc("angleRecordings/outputAccLeye.csv", ios::app);
+
+	static double prev_vel[2] = { 0.0, 0.0 };
+
+	for (int i = 0; i < num_eoc_muscles - 1; i++) {
+		foutput << GV_get(SysLEye->actLevel(), i) << ",";
+	}
+	foutput << GV_get(SysLEye->actLevel(), num_eoc_muscles - 1) << endl;
+	foutput.flush();
+
+	ori_leye = getcurrent_ori_leye();
+
+	foutputori << ori_leye.x() << ",";
+	foutputori << ori_leye.z() << "," << endl;
+	foutputori.flush();
+
+	gBallLink* l = (gBallLink*)(SysLEye->eyeball);
+
+	double velx = l->genVel(0);
+	double velz = l->genVel(2);
+
+	foutputvel << velx << ",";
+	foutputvel << velz << "," << endl;
+	foutputvel.flush();
+
+	double accx = velx - prev_vel[0];
+	double accz = velz - prev_vel[1];
+
+	foutputacc << accx << ",";
+	foutputacc << accz << "," << endl;
+	foutputacc.flush();
+
+	prev_vel[0] = velx;
+	prev_vel[1] = velz;
+	//*/
 }
 
 void doInverseDynamicMuscleControlLeyeNew_fixaton(gVec3 v, float time)
@@ -3977,6 +3990,8 @@ void doMuscleControlKerasLEye(gVec3 v)
 		SysLEye->setActLevel(j,gMin(1.0, gMax(param*newAct,0)));
 	}
 
+	curTime += simulationTimeStep;
+
 	/*int repeat = (int)(displayTimeStep/simulationTimeStep) + 1;
 	for(int i=0;i<repeat;++i){	
 		SysLEye->clearAllForcesWithoutMuscle();
@@ -4011,7 +4026,8 @@ void doMuscleControlKerasLEye(gVec3 v)
 	SysLEye->adjust_cornea();*/
 
 	// Everything below this just records data for plotting
-	/*ofstream foutput("kerasOutputLeyeActivationsForPlotting.csv", ios::app);
+	///*
+	ofstream foutput("kerasOutputLeyeActivationsForPlotting.csv", ios::app);
 	ofstream foutputori("outputOriLeye.csv", ios::app);
 	ofstream foutputvel("outputVelLeye.csv", ios::app);
 	ofstream foutputacc("outputAccLeye.csv", ios::app);
@@ -4047,7 +4063,8 @@ void doMuscleControlKerasLEye(gVec3 v)
 	foutputacc.flush();
 
 	prev_vel[0] = velx;
-	prev_vel[1] = velz;*/
+	prev_vel[1] = velz;
+	//*/
 }
 
 void create_bounce_board(void)
@@ -4518,7 +4535,7 @@ int main( int argc, char **argv )
 	
 	//init_glutLeft();
 	//init_osgLeft();
-//	
+	
 	init_glut_PR();
 //#if defined(TEST_PUPIL) || defined(TEST_LENS) || defined(TEST_FOVEATION)
 //	init_glut_PRTest();

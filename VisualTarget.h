@@ -23,6 +23,8 @@ public:
 	void move_visual_target_lens_online_fixed_positions(osg::MatrixTransform* trans_visual_target, double time);
 	bool move_visual_target_fixed_position(osg::MatrixTransform* trans_visual_target, double time);
 
+	void move_visual_target_projectile_motion(osg::MatrixTransform* trans_visual_target, double time);
+
 private:
 };
 

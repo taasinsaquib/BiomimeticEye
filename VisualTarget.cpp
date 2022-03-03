@@ -139,6 +139,7 @@ void create_visual_target2(void)
 #else
 	//mat.makeTranslate(baseWorldPos.x(), baseWorldPos.y()+yplane, baseWorldPos.z()); // use this
 	mat.makeTranslate(baseWorldPos.x(), baseWorldPos.y() - 445, baseWorldPos.z()); // use this
+	//mat.makeTranslate(baseWorldPos.x(), baseWorldPos.y() - 1500, baseWorldPos.z()); // use this
 #endif
 	visualTarget.get()->setMatrix(mat);
 	if (sceneGroup) {
@@ -539,6 +540,124 @@ void move_visual_target_smooth_pursuit_lateral(osg::MatrixTransform* trans_visua
 	mat.setTrans(cur_pos);
 	trans_visual_target->setMatrix(mat);
 
+}
+
+void move_visual_target_projectile_motion(osg::MatrixTransform* trans_visual_target, double time)
+{
+	// Change Background Color
+	vis_target_ec = 0.6;
+	osg::ref_ptr<osg::Material> mater2 = new osg::Material;
+	mater2->setEmission(osg::Material::FRONT_AND_BACK, osg::Vec4(vis_target_ec, vis_target_ec, vis_target_ec, 1.0));
+	visualTarget.get()->getChild(0)->getStateSet()->setAttributeAndModes(mater2.get(), osg::StateAttribute::ON);
+	sceneView->setClearColor(osg::Vec4(0.4 * vis_target_ec, 0.4 * vis_target_ec, 0.4 * vis_target_ec, 1.0));
+	sceneView->getLight()->setDiffuse(osg::Vec4(vis_target_ec, vis_target_ec, vis_target_ec, 1.0));
+	sceneView->getLight()->setSpecular(osg::Vec4(vis_target_ec, vis_target_ec, vis_target_ec, 1.0));
+	sceneView->getLight()->setAmbient(osg::Vec4(vis_target_ec, vis_target_ec, vis_target_ec, 1.0));
+
+	/*
+	osg::Vec3 one_step;
+	static int tot_count = 10;
+	static int counter = 0;
+	gLink* base = SysLEye->root();
+	base = SysLEye->findLink("Eyeball"); //this is temporary, the below one was the original, but did not work. probably need initialization.
+	gVec3 baseWorldPos = base->frame().trn();
+
+	osg::Vec3 startPos(baseWorldPos.x(), baseWorldPos.y() + yplane, baseWorldPos.z());
+	static osg::Vec3 cur_pos = startPos;
+
+	//cout << cur_pos.x() << "," << cur_pos.y() << ',' << cur_pos.z() << endl;
+	
+	float tstt = counter;
+
+	cout << vx << "," << vy << endl;
+
+	float xval = cur_pos.z() + vx * tstt;
+	//float yval = 0;
+	float yval = cur_pos.y() + vy * tstt + 0.5 * g * tstt * tstt;
+	//float zval = 0;
+	//cout << xval - cur_pos.y() << "," << yval - cur_pos.y() << endl;
+	vy += g * tstt;
+
+	counter++;
+
+	osg::Vec3 target = osg::Vec3(baseWorldPos.x(), baseWorldPos.y() + yplane + yval, baseWorldPos.z() + xval);
+	one_step = target - cur_pos;
+	//one_step /= tot_count;
+
+	cout << one_step.x() << "," << one_step.y() << "," << one_step.z() << endl;
+
+	cur_pos += one_step;
+
+	osg::Matrixd mat;
+	mat.setTrans(cur_pos);
+	trans_visual_target->setMatrix(mat);
+	*/
+
+
+	osg::Vec3 one_step;
+	static int tot_count = 30;
+	gLink* base = SysLEye->root();
+	base = SysLEye->findLink("Eyeball"); //this is temporary, the below one was the original, but did not work. probably need initialization.
+	gVec3 baseWorldPos = base->frame().trn();
+
+	osg::Vec3 startPos(baseWorldPos.x(), baseWorldPos.y() + yplane, baseWorldPos.z());
+	static osg::Vec3 cur_pos = startPos;
+
+	float xbound = 120;
+	float zbound = 130;
+
+	// Target positions
+	vector<osg::Vec3> targetPoints;
+
+	float lastX = baseWorldPos.x();
+	float lastY = baseWorldPos.y() + yplane;
+	float lastZ = baseWorldPos.z();
+
+	targetPoints.push_back(osg::Vec3(baseWorldPos.x(), baseWorldPos.y() + yplane, baseWorldPos.z()));
+
+	for (int i = 0; i < 100; i++) {
+
+		float xval = cur_pos.z() + vx;
+		float yval = cur_pos.y() + vy + 0.5 * g;
+		vy += g;
+
+		lastX += xval;
+		lastY += yval;
+		lastZ += xval;
+
+		targetPoints.push_back(osg::Vec3(lastX, lastY, lastZ));
+	}
+
+	static int targetIndex = 0;
+	static int cnt = 0;
+
+	static double one_step_int = 0.7 / tot_count;
+
+	if (cnt < tot_count) {
+		cnt++;
+	}
+	else {
+		//osg::Vec3 oldTarget = targetPoints.at(targetIndex);
+		targetIndex = min(targetIndex + 1, targetPoints.size() - 1);
+		//osg::Vec3 newTarget = targetPoints.at(targetIndex);
+		if (tot_count == 30) {
+			tot_count *= 3;
+		}
+		cnt = 0;
+	
+	}
+
+	cout << "vis target ec: " << vis_target_ec << endl;
+
+	osg::Vec3 target = targetPoints.at(targetIndex);
+
+	one_step = target - cur_pos;
+	one_step /= tot_count;
+	cur_pos += one_step;
+
+	osg::Matrixd mat;
+	mat.setTrans(cur_pos);
+	trans_visual_target->setMatrix(mat);
 }
 
 void move_visual_target_oscillate_straight(osg::MatrixTransform* trans_visual_target, double time)
@@ -982,11 +1101,11 @@ bool move_visual_target_fixed_position(osg::MatrixTransform* trans_visual_target
 	gVec3 baseWorldPos = base->frame().trn();
 
 	if (counter < 2) {
-		pos.set(baseWorldPos.x(), baseWorldPos.y() - 500, baseWorldPos.z());
+		pos.set(baseWorldPos.x(), baseWorldPos.y() - 1500, baseWorldPos.z());
 	}
 	else {
 		//pos.set(baseWorldPos.x()+120, baseWorldPos.y()-500, baseWorldPos.z()-100);
-		pos.set(baseWorldPos.x() - 150.0, baseWorldPos.y() - 500, baseWorldPos.z() + 40);
+		pos.set(baseWorldPos.x(), baseWorldPos.y() - 1500, baseWorldPos.z());
 		//pos.set(baseWorldPos.x(), baseWorldPos.y()-500, baseWorldPos.z());
 	}
 

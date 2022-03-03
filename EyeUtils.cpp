@@ -677,6 +677,7 @@ void adjust_lens_cilliary_muscles()
 	//cout << "acc: " << SysLEye->muscle(14)->actLevel() << endl;
 
 	static double act = 0.0;
+	static double acc = 0.0;
 #ifndef ONLINE_LENS
 #if !defined(TEST_LENS) && !defined(TEST_PUPIL) && !defined(TEST_FOVEATION)
 #if defined(RECORD_PUPIL)
@@ -1241,7 +1242,7 @@ void myComputeThetaPhi2()
 	Vec3f_local returnedImageLens[RAYTRACE_WIDTH * RAYTRACE_HEIGHT];
 	Vec3f_local returnedImageFoveation[RAYTRACE_WIDTH * RAYTRACE_HEIGHT];
 	//raytracer(sherePos_local, SPHERE_SIZE, Vec3f_local(eye.x(),eye.y(), eye.z()), Vec3f_local(ori_leye.x()*gDTR,0,ori_leye.z()*gDTR),returnedImage,0);
-	setRandomPupilAndLensLengths();
+	//setRandomPupilAndLensLengths();
 	raytracer(spehere_poss, SPHERE_SIZE, Vec3f_local(eye.x(), eye.y(), eye.z()), Vec3f_local(ori_leye.x() * gDTR, 0, ori_leye.z() * gDTR), returnedImagePupil, returnedImageLens, returnedImageFoveation, 0);
 
 	active_idx_foveation.clear();
@@ -1267,17 +1268,20 @@ void myComputeThetaPhi2()
 	fonvOut << returnedImageFoveation[(RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1].x << endl;
 	fonvOut.close();
 
-	//  -d normal -m FC -n FC_normal_100epoch
-	//  -d normal -m LCN -n LCN_normal_100epoch_k25
+	// -g 2
 
-	// -d delta -m FC -n FC_delta_100epoch_k25
-	// -d delta -m LCN -n LCN_delta_100epoch_k25
-	// -d delta -m LCNSpikingHybrid -n LCNSpikingHybrid_delta_100epoch_k25_L1 
-	// -d delta -m LCNSpikingHybrid -n LCNSpikingHybrid_delta_100epoch_k25_L4
+	// -d normal
+	// -d delta
 
-	// -d delta -m LCNChannelStack -n LCNChannelStack_delta_100epoch_k25
+	// -m LCN -n ex02_LCN_normal_100epoch_k25
+	// -m LCNSpikingHybrid  -l 4 -n ex35_LCNSpikingHybrid_spiking_normal_100epoch_k25_L4_surrogate_fastSigmoid
+	// -m LCNSpikingHybrid2 -l 4 -n ex37_LCNSpikingHybrid2_spiking_normal_100epoch_k25_L4_surrogate_fastSigmoid
 
-	system("C:\\Users\\taasi\\Desktop\\RunSNN\\dist\\main\\main.exe -d delta -m LCNSpikingHybrid -n LCNSpikingHybrid_delta_100epoch_k25_L1");
+	// -m LCN -n ex02_LCN_delta_100epoch_k25
+	// -m LCNSpikingHybrid  -l 4 -n ex35_LCNSpikingHybrid_spiking_delta_100epoch_k25_L4_surrogate_fastSigmoid
+	// -m LCNSpikingHybrid2 -l 4 -n ex37_LCNSpikingHybrid2_spiking_delta_100epoch_k25_L4_surrogate_fastSigmoid
+
+	system("C:\\Users\\taasi\\Desktop\\RunSNN\\dist\\main\\main.exe -g 2 -d normal -m LCNSpikingHybrid -l 4 -n ex37_LCNSpikingHybrid2_spiking_normal_100epoch_k25_L4_surrogate_fastSigmoid");
 
 	vector<float> returned(2);
 	ifstream fanglesOut("resultOut.csv");
@@ -1301,6 +1305,10 @@ void myComputeThetaPhi2()
 	double tyl, txl;
 	tyl = returned[0] * stdValueLeft[0] + meanValueLeft[0] + eye_cyl;
 	txl = returned[1] * stdValueLeft[1] + meanValueLeft[1] + eye_cxl;
+
+	//tyl = tyl / 2;
+	//txl = txl / 2;
+
 	tyl_temp = tyl;
 	txl_temp = txl;
 
@@ -1348,9 +1356,3 @@ void myComputeThetaPhi2()
 
 
 }
-
-/*
-	TODO: 
-		write actual tyl txl to file
-		nn tyl txl to diff files
-*/

@@ -351,6 +351,15 @@ keras::DataChunk* sampleLensKeras;
 
 /***************************************************************************/
 
+// Projectile Motion
+float g = -1;
+float v = 0.0001;
+float angle = 5 * gDTR;
+float vx = v * cos(angle);
+float vy = v * sin(angle);
+float h = 0;
+
+
 //#define CONTROL_LEGS
 
 //#define SHOW_CORNEA_SPHERES
@@ -369,8 +378,8 @@ keras::DataChunk* sampleLensKeras;
 //ifstream fanglesOut("test.csv", std::fstream::trunc);
 
 #define RECORD_ANGLES
-ofstream frecordAngles("./angleRecordings/actual_smooth_lateral.csv");
-ofstream frecordAngles1("./angleRecordings/smooth_LCNSpikingHybrid_delta_100epoch_k25_L1.csv");
+ofstream frecordAngles("./angleRecordings/actual_smooth.csv");
+ofstream frecordAngles1("./angleRecordings/nn_out.csv");
 
 //#define SHOW_RAYS
 bool show_forward_trace_rays;
@@ -420,7 +429,7 @@ bool targetMoveOverride;
 bool oscillateLensCilliaryActivation;
 bool lensMovementDemoComplete;
 
-#define RECORD_FOVEATION
+//#define RECORD_FOVEATION
 //#define TEST_FOVEATION
 bool start_recording_foveation;
 

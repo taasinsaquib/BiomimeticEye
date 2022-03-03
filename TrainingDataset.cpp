@@ -187,7 +187,7 @@ void generateTrainingDatasetLens()
 		SysLEye->adjust_cornea();
 
 		cnt++;
-		if (cnt % 10 == 0)
+		if (cnt % 1000 == 0)
 			cout << "iteration = " << cnt << endl;
 		start_recording_lens = true;
 	}

@@ -124,7 +124,7 @@ void raytracer(vector<Vec3f_local> spos, float radius, Vec3f_local ray_orig, Vec
 			finputlens << returnedImageLens[(RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1].x << endl;
 			finputlensact << SysLEye->muscle(14)->actLevel() << endl;
 			foutputlens << lens_error << endl;
-			cout << "LENS " << lens_error << endl;
+			//cout << "LENS " << lens_error << endl;
 
 			foutputpupilrandompupilact << SysLEye->muscle(6)->actLevel() << endl;
 
@@ -151,12 +151,12 @@ void raytracer(vector<Vec3f_local> spos, float radius, Vec3f_local ray_orig, Vec
 
 		double theta = theta_vec_conversion(localTargetPos);
 		double phi = -phi_vec_conversion(localTargetPos);
-		for (int i = 0; i < (RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1; i++) {
-			finputperception << returnedImageFoveation[i].x << ",";
-		}
-		finputperception << returnedImageFoveation[(RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1].x << endl;
+		//for (int i = 0; i < (RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1; i++) {
+		//	finputperception << returnedImageFoveation[i].x << ",";
+		//}
+		//finputperception << returnedImageFoveation[(RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1].x << endl;
 
-		/*
+		
 		for (int i = 0; i < (RAYTRACE_WIDTH * RAYTRACE_HEIGHT); i++) {
 			finputperception << returnedImageFoveation[i].x << ",";
 		}
@@ -167,7 +167,7 @@ void raytracer(vector<Vec3f_local> spos, float radius, Vec3f_local ray_orig, Vec
 			finputperception << returnedImageFoveation[i].z << ",";
 		}
 		finputperception << returnedImageFoveation[(RAYTRACE_WIDTH * RAYTRACE_HEIGHT) - 1].z << endl;
-		*/
+		
 
 		foutputperception << theta << "," << phi << endl;
 		foutputperceptionballpos << ballpos.x() << "," << ballpos.y() << "," << ballpos.z() << "," << vis_target_ec << endl;
